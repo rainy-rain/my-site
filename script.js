@@ -1,18 +1,19 @@
 /* ============================================================
-   交互脚本（无依赖，纯原生）
-   设计原则：渐进增强 —— 脚本没加载成功时，页面内容照常完整可见。
+   Interactions (no dependencies, plain vanilla JS)
+   Principle: progressive enhancement — if this script fails to
+   load, the page content stays fully visible.
    ============================================================ */
 
 (function () {
   'use strict';
 
-  /* ---------- 页脚年份自动更新 ---------- */
+  /* ---------- Auto-update the footer year ---------- */
   var yearEl = document.getElementById('year');
   if (yearEl) {
     yearEl.textContent = String(new Date().getFullYear());
   }
 
-  /* ---------- 顶栏滚动后显示分割线 ---------- */
+  /* ---------- Show the header divider once scrolled ---------- */
   var header = document.querySelector('.site-header');
 
   function syncHeader() {
@@ -23,13 +24,14 @@
   window.addEventListener('scroll', syncHeader, { passive: true });
   syncHeader();
 
-  /* ---------- 用户是否希望减少动效 ---------- */
+  /* ---------- Does the user prefer reduced motion? ---------- */
   var prefersReduced =
     window.matchMedia &&
     window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  /* ---------- 滚动淡入 ---------- */
-  // 关键：.reveal 只在这里添加。若 JS 不可用，元素永远不会隐藏。
+  /* ---------- Scroll reveal ---------- */
+  // Key point: .reveal is only added here. Without JS the elements are
+  // never hidden, so the content can never disappear.
   if (!prefersReduced && 'IntersectionObserver' in window) {
     var revealTargets = document.querySelectorAll('.section');
 
@@ -50,7 +52,7 @@
     });
   }
 
-  /* ---------- 导航当前区块高亮 ---------- */
+  /* ---------- Highlight the active nav section ---------- */
   var navLinks = Array.prototype.slice.call(
     document.querySelectorAll('.nav a[href^="#"]')
   );
@@ -89,7 +91,7 @@
     }
   }
 
-  /* ---------- 回到顶部时清空导航高亮 ---------- */
+  /* ---------- Clear the nav highlight back at the top ---------- */
   var hero = document.querySelector('.hero');
   if (hero) {
     var heroObserver = new IntersectionObserver(function (entries) {

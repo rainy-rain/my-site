@@ -1,31 +1,32 @@
 /* ============================================================
-   深蓝简约主题
-   想换配色只改下面 :root 里的变量即可，无需动其他样式。
+   Deep-blue minimal theme
+   To change the palette, edit the variables in :root below —
+   nothing else needs to change.
    ============================================================ */
 
 :root {
-  /* —— 颜色 —— */
-  --bg:          #0a1420;   /* 页面底色：深海蓝 */
-  --surface:     #0f1e2e;   /* 卡片/抬升面 */
-  --surface-2:   #142a3f;   /* 悬停/次级面 */
-  --border:      #1c344c;   /* 描边 */
-  --text:        #e8f0fa;   /* 主文字 */
-  --muted:       #8ba3c0;   /* 次要文字 */
-  --accent:      #4f9cf9;   /* 强调色：亮蓝 */
+  /* Colors */
+  --bg:          #0a1420;   /* page background: deep sea blue */
+  --surface:     #0f1e2e;   /* card / elevated surface */
+  --surface-2:   #142a3f;   /* hover / secondary surface */
+  --border:      #1c344c;   /* borders */
+  --text:        #e8f0fa;   /* primary text */
+  --muted:       #8ba3c0;   /* secondary text */
+  --accent:      #4f9cf9;   /* accent: bright blue */
   --accent-soft: rgba(79, 156, 249, 0.12);
 
-  /* —— 排版 —— */
+  /* Typography */
   --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
           "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
 
-  /* —— 布局 —— */
+  /* Layout */
   --maxw: 860px;
   --radius: 12px;
   --gap: 24px;
 }
 
 /* ============================================================
-   基础
+   Base
    ============================================================ */
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -43,7 +44,7 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* 首屏那点很淡的蓝色光晕，制造深度但不抢戏 */
+/* A very faint blue glow behind the hero: adds depth without stealing focus */
 body::before {
   content: "";
   position: fixed;
@@ -66,7 +67,7 @@ body::before {
 a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
 
-/* 键盘可达性：焦点态清晰可见 */
+/* Keyboard accessibility: a clearly visible focus ring */
 a:focus-visible,
 button:focus-visible {
   outline: 2px solid var(--accent);
@@ -75,7 +76,7 @@ button:focus-visible {
 }
 
 /* ============================================================
-   顶部导航
+   Header / navigation
    ============================================================ */
 
 .site-header {
@@ -89,7 +90,7 @@ button:focus-visible {
   transition: border-color 0.25s ease;
 }
 
-/* 滚动后浮现一条细分割线 */
+/* A hairline divider appears once the page is scrolled */
 .site-header.is-scrolled { border-bottom-color: var(--border); }
 
 .header-inner {
@@ -116,11 +117,11 @@ button:focus-visible {
 }
 .nav a:hover { color: var(--text); text-decoration: none; }
 
-/* 当前所在区块高亮 */
+/* Highlight the section currently in view */
 .nav a.is-active { color: var(--accent); }
 
 /* ============================================================
-   首屏
+   Hero
    ============================================================ */
 
 .hero { padding: 96px 0 72px; }
@@ -159,7 +160,7 @@ button:focus-visible {
   gap: 12px;
 }
 
-/* —— 按钮 —— */
+/* Buttons */
 
 .btn {
   display: inline-block;
@@ -190,7 +191,7 @@ button:focus-visible {
 }
 
 /* ============================================================
-   区块通用
+   Sections (shared)
    ============================================================ */
 
 .section {
@@ -208,7 +209,7 @@ button:focus-visible {
 }
 
 /* ============================================================
-   关于
+   About
    ============================================================ */
 
 .about-grid {
@@ -237,7 +238,7 @@ button:focus-visible {
 .fact-val { color: var(--text); text-align: right; }
 
 /* ============================================================
-   项目卡片
+   Project cards
    ============================================================ */
 
 .cards {
@@ -285,7 +286,7 @@ button:focus-visible {
 }
 
 /* ============================================================
-   联系
+   Contact
    ============================================================ */
 
 .contact-lead { margin: 0 0 22px; color: var(--muted); }
@@ -315,8 +316,15 @@ button:focus-visible {
 .contact-label { color: var(--muted); font-size: 12px; letter-spacing: 0.06em; }
 .contact-value { color: var(--text); font-size: 15px; }
 
+/* Static info items (Douyin ID / QQ — nothing reliable to link to) */
+.contact-link.is-static { cursor: default; }
+.contact-link.is-static:hover {
+  border-color: var(--border);
+  background: var(--surface);
+}
+
 /* ============================================================
-   页脚
+   Footer
    ============================================================ */
 
 .site-footer {
@@ -331,8 +339,9 @@ button:focus-visible {
 }
 
 /* ============================================================
-   滚动淡入（由 script.js 添加 .is-visible）
-   默认可见，JS 未加载时内容也照常显示，不会白屏。
+   Scroll reveal (script.js adds .is-visible)
+   Visible by default, so content still renders when JS never
+   loads — no blank page.
    ============================================================ */
 
 .reveal { opacity: 0; transform: translateY(14px); }
@@ -349,7 +358,7 @@ button:focus-visible {
 }
 
 /* ============================================================
-   响应式
+   Responsive
    ============================================================ */
 
 @media (max-width: 640px) {
