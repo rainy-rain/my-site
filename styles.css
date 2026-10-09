@@ -1,0 +1,360 @@
+/* ============================================================
+   深蓝简约主题
+   想换配色只改下面 :root 里的变量即可，无需动其他样式。
+   ============================================================ */
+
+:root {
+  /* —— 颜色 —— */
+  --bg:          #0a1420;   /* 页面底色：深海蓝 */
+  --surface:     #0f1e2e;   /* 卡片/抬升面 */
+  --surface-2:   #142a3f;   /* 悬停/次级面 */
+  --border:      #1c344c;   /* 描边 */
+  --text:        #e8f0fa;   /* 主文字 */
+  --muted:       #8ba3c0;   /* 次要文字 */
+  --accent:      #4f9cf9;   /* 强调色：亮蓝 */
+  --accent-soft: rgba(79, 156, 249, 0.12);
+
+  /* —— 排版 —— */
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+          "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
+
+  /* —— 布局 —— */
+  --maxw: 860px;
+  --radius: 12px;
+  --gap: 24px;
+}
+
+/* ============================================================
+   基础
+   ============================================================ */
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  font-size: 16px;
+  line-height: 1.75;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* 首屏那点很淡的蓝色光晕，制造深度但不抢戏 */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(700px 380px at 50% -8%, rgba(79, 156, 249, 0.10), transparent 70%);
+  z-index: 0;
+}
+
+.container {
+  width: 100%;
+  max-width: var(--maxw);
+  margin: 0 auto;
+  padding: 0 24px;
+  position: relative;
+  z-index: 1;
+}
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* 键盘可达性：焦点态清晰可见 */
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* ============================================================
+   顶部导航
+   ============================================================ */
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: rgba(10, 20, 32, 0.72);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid transparent;
+  transition: border-color 0.25s ease;
+}
+
+/* 滚动后浮现一条细分割线 */
+.site-header.is-scrolled { border-bottom-color: var(--border); }
+
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 60px;
+}
+
+.brand {
+  color: var(--text);
+  font-weight: 600;
+  font-size: 15px;
+  letter-spacing: 0.02em;
+}
+.brand:hover { text-decoration: none; color: var(--accent); }
+
+.nav { display: flex; gap: 22px; }
+
+.nav a {
+  color: var(--muted);
+  font-size: 14px;
+  transition: color 0.2s ease;
+}
+.nav a:hover { color: var(--text); text-decoration: none; }
+
+/* 当前所在区块高亮 */
+.nav a.is-active { color: var(--accent); }
+
+/* ============================================================
+   首屏
+   ============================================================ */
+
+.hero { padding: 96px 0 72px; }
+
+.hero-eyebrow {
+  margin: 0 0 8px;
+  color: var(--accent);
+  font-size: 14px;
+  letter-spacing: 0.08em;
+}
+
+.hero-title {
+  margin: 0;
+  font-size: clamp(38px, 7vw, 56px);
+  line-height: 1.15;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.hero-subtitle {
+  margin: 14px 0 0;
+  color: var(--muted);
+  font-size: 17px;
+}
+
+.hero-desc {
+  margin: 22px 0 0;
+  max-width: 52ch;
+  color: var(--muted);
+}
+
+.hero-actions {
+  margin-top: 34px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* —— 按钮 —— */
+
+.btn {
+  display: inline-block;
+  padding: 10px 20px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 14px;
+  background: transparent;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+}
+.btn:hover {
+  text-decoration: none;
+  background: var(--surface-2);
+  border-color: var(--accent);
+}
+
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #06121f;
+  font-weight: 600;
+}
+.btn-primary:hover {
+  background: #6aabfa;
+  border-color: #6aabfa;
+  transform: translateY(-1px);
+}
+
+/* ============================================================
+   区块通用
+   ============================================================ */
+
+.section {
+  padding: 64px 0;
+  border-top: 1px solid var(--border);
+}
+
+.section-title {
+  margin: 0 0 28px;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+/* ============================================================
+   关于
+   ============================================================ */
+
+.about-grid {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 40px;
+  align-items: start;
+}
+
+.about-text p { margin: 0 0 14px; color: var(--muted); }
+.about-text p:last-child { margin-bottom: 0; }
+
+.facts { margin: 0; padding: 0; list-style: none; }
+
+.facts li {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 10px 0;
+  border-bottom: 1px dashed var(--border);
+  font-size: 14px;
+}
+.facts li:last-child { border-bottom: none; }
+
+.fact-key { color: var(--muted); }
+.fact-val { color: var(--text); text-align: right; }
+
+/* ============================================================
+   项目卡片
+   ============================================================ */
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: var(--gap);
+}
+
+.card {
+  display: block;
+  padding: 22px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: inherit;
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+.card:hover {
+  text-decoration: none;
+  transform: translateY(-3px);
+  border-color: var(--accent);
+  background: var(--surface-2);
+}
+
+.card-title {
+  margin: 0 0 8px;
+  font-size: 17px;
+  font-weight: 600;
+}
+
+.card-desc {
+  margin: 0 0 16px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.card-tag {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 12px;
+}
+
+/* ============================================================
+   联系
+   ============================================================ */
+
+.contact-lead { margin: 0 0 22px; color: var(--muted); }
+
+.contact-links {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 14px;
+}
+
+.contact-link {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 16px 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--surface);
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+.contact-link:hover {
+  text-decoration: none;
+  border-color: var(--accent);
+  background: var(--surface-2);
+}
+
+.contact-label { color: var(--muted); font-size: 12px; letter-spacing: 0.06em; }
+.contact-value { color: var(--text); font-size: 15px; }
+
+/* ============================================================
+   页脚
+   ============================================================ */
+
+.site-footer {
+  padding: 32px 0 48px;
+  border-top: 1px solid var(--border);
+}
+.site-footer p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  text-align: center;
+}
+
+/* ============================================================
+   滚动淡入（由 script.js 添加 .is-visible）
+   默认可见，JS 未加载时内容也照常显示，不会白屏。
+   ============================================================ */
+
+.reveal { opacity: 0; transform: translateY(14px); }
+.reveal.is-visible {
+  opacity: 1;
+  transform: none;
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .reveal, .reveal.is-visible { opacity: 1; transform: none; transition: none; }
+  .card:hover, .btn-primary:hover { transform: none; }
+}
+
+/* ============================================================
+   响应式
+   ============================================================ */
+
+@media (max-width: 640px) {
+  .hero { padding: 64px 0 52px; }
+  .section { padding: 48px 0; }
+  .about-grid { grid-template-columns: 1fr; gap: 28px; }
+  .nav { gap: 16px; }
+}
