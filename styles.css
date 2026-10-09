@@ -15,6 +15,11 @@
   --accent:      #4f9cf9;   /* accent: bright blue */
   --accent-soft: rgba(79, 156, 249, 0.12);
 
+  /* Ambient tints used by the aurora blobs */
+  --tint-blue:   rgba(79, 156, 249, 0.30);
+  --tint-cyan:   rgba(34, 211, 238, 0.20);
+  --tint-indigo: rgba(99, 102, 241, 0.20);
+
   /* Typography */
   --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
           "Hiragino Sans GB", "Microsoft YaHei", "Helvetica Neue", Arial, sans-serif;
@@ -31,7 +36,11 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 
-html { scroll-behavior: smooth; }
+html {
+  scroll-behavior: smooth;
+  /* One wheel gesture advances exactly one panel */
+  scroll-snap-type: y mandatory;
+}
 
 body {
   margin: 0;
@@ -44,16 +53,8 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* A very faint blue glow behind the hero: adds depth without stealing focus */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  background:
-    radial-gradient(700px 380px at 50% -8%, rgba(79, 156, 249, 0.10), transparent 70%);
-  z-index: 0;
-}
+/* Everything real sits above the ambient layers */
+main { position: relative; z-index: 1; }
 
 .container {
   width: 100%;
@@ -76,22 +77,132 @@ button:focus-visible {
 }
 
 /* ============================================================
+   Ambient background
+   Three slowly drifting colour clouds, a fading grid, and a
+   faint film grain. All decorative, all pointer-events: none.
+   ============================================================ */
+
+.bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.aurora { position: absolute; inset: 0; }
+
+.blob {
+  position: absolute;
+  display: block;
+  border-radius: 50%;
+  will-change: transform;
+}
+
+.blob-1 {
+  width: 62vw;
+  height: 62vw;
+  top: -22vw;
+  left: -16vw;
+  background: radial-gradient(circle at center, var(--tint-blue), rgba(79, 156, 249, 0) 68%);
+  animation: drift-a 30s ease-in-out infinite alternate;
+}
+
+.blob-2 {
+  width: 54vw;
+  height: 54vw;
+  bottom: -22vw;
+  right: -16vw;
+  background: radial-gradient(circle at center, var(--tint-cyan), rgba(34, 211, 238, 0) 68%);
+  animation: drift-b 38s ease-in-out infinite alternate;
+}
+
+.blob-3 {
+  width: 48vw;
+  height: 48vw;
+  top: 30%;
+  left: 40%;
+  background: radial-gradient(circle at center, var(--tint-indigo), rgba(99, 102, 241, 0) 70%);
+  animation: drift-c 44s ease-in-out infinite alternate;
+}
+
+@keyframes drift-a {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to   { transform: translate3d(9vw, 7vw, 0) scale(1.14); }
+}
+@keyframes drift-b {
+  from { transform: translate3d(0, 0, 0) scale(1.08); }
+  to   { transform: translate3d(-8vw, -6vw, 0) scale(1); }
+}
+@keyframes drift-c {
+  from { transform: translate3d(-4vw, 3vw, 0) scale(1); }
+  to   { transform: translate3d(6vw, -5vw, 0) scale(1.18); }
+}
+
+/* Hairline grid, faded out towards the edges so it never looks like a table */
+.grid-lines {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.030) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.030) 1px, transparent 1px);
+  background-size: 76px 76px;
+  -webkit-mask-image: radial-gradient(ellipse 92% 78% at 50% 42%, #000 12%, transparent 78%);
+          mask-image: radial-gradient(ellipse 92% 78% at 50% 42%, #000 12%, transparent 78%);
+}
+
+/* Film grain — keeps the large dark areas from looking flat */
+.grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23g)'/%3E%3C/svg%3E");
+}
+
+/* ============================================================
+   Panels
+   Each fills the viewport and is its own scroll-snap point.
+   script.js derives opacity and drift from the scroll position,
+   so the outgoing panel dissolves as the incoming one appears.
+   ============================================================ */
+
+.slide {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100svh;          /* avoids mobile URL-bar clipping */
+  scroll-snap-align: start;
+  scroll-snap-stop: always;    /* never skip a panel in one gesture */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 96px 0 80px;
+  will-change: opacity, transform;
+}
+
+/* ============================================================
    Header / navigation
    ============================================================ */
 
 .site-header {
-  position: sticky;
+  /* fixed, not sticky: it must take no layout space, so the document is
+     exactly 3 x 100vh and every snap point lands where it should. */
+  position: fixed;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: 10;
-  background: rgba(10, 20, 32, 0.72);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(10, 20, 32, 0.55);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border-bottom: 1px solid transparent;
-  transition: border-color 0.25s ease;
+  transition: border-color 0.25s ease, background 0.25s ease;
 }
 
 /* A hairline divider appears once the page is scrolled */
-.site-header.is-scrolled { border-bottom-color: var(--border); }
+.site-header.is-scrolled {
+  border-bottom-color: var(--border);
+  background: rgba(10, 20, 32, 0.78);
+}
 
 .header-inner {
   display: flex;
@@ -117,14 +228,32 @@ button:focus-visible {
 }
 .nav a:hover { color: var(--text); text-decoration: none; }
 
-/* Highlight the section currently in view */
+/* Highlight the panel currently nearest the viewport centre */
 .nav a.is-active { color: var(--accent); }
 
 /* ============================================================
    Hero
    ============================================================ */
 
-.hero { padding: 96px 0 72px; }
+/* Monogram stand-in for a portrait — swap the letter, or delete the
+   element once you have a real photo. */
+.hero-badge {
+  width: 78px;
+  height: 78px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 28px;
+  border-radius: 50%;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  background: radial-gradient(circle at 30% 25%, rgba(79, 156, 249, 0.30), rgba(10, 20, 32, 0.92) 72%);
+  border: 1px solid rgba(79, 156, 249, 0.42);
+  box-shadow:
+    0 0 46px rgba(79, 156, 249, 0.22),
+    inset 0 0 24px rgba(79, 156, 249, 0.14);
+}
 
 .hero-eyebrow {
   margin: 0 0 8px;
@@ -135,26 +264,38 @@ button:focus-visible {
 
 .hero-title {
   margin: 0;
-  font-size: clamp(38px, 7vw, 56px);
-  line-height: 1.15;
+  font-size: clamp(46px, 9vw, 84px);
+  line-height: 1.05;
   font-weight: 700;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.03em;
+  color: var(--text);
+}
+
+/* Gradient fill, applied only where text clipping is supported so the
+   name can never end up invisible. */
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .hero-title {
+    background: linear-gradient(180deg, #ffffff 0%, #d3e6ff 52%, #74adf2 100%);
+    -webkit-background-clip: text;
+            background-clip: text;
+    color: transparent;
+  }
 }
 
 .hero-subtitle {
-  margin: 14px 0 0;
+  margin: 16px 0 0;
   color: var(--muted);
-  font-size: 17px;
+  font-size: 18px;
 }
 
 .hero-desc {
   margin: 22px 0 0;
-  max-width: 52ch;
+  max-width: 46ch;
   color: var(--muted);
 }
 
 .hero-actions {
-  margin-top: 34px;
+  margin-top: 38px;
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
@@ -164,18 +305,21 @@ button:focus-visible {
 
 .btn {
   display: inline-block;
-  padding: 10px 20px;
+  padding: 11px 22px;
   border: 1px solid var(--border);
   border-radius: 8px;
   color: var(--text);
   font-size: 14px;
-  background: transparent;
-  transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+  background: rgba(15, 30, 46, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
 }
 .btn:hover {
   text-decoration: none;
-  background: var(--surface-2);
+  background: rgba(20, 42, 63, 0.75);
   border-color: var(--accent);
+  box-shadow: 0 0 26px rgba(79, 156, 249, 0.16);
 }
 
 .btn-primary {
@@ -188,19 +332,18 @@ button:focus-visible {
   background: #6aabfa;
   border-color: #6aabfa;
   transform: translateY(-1px);
+  box-shadow: 0 6px 26px rgba(79, 156, 249, 0.42);
 }
 
 /* ============================================================
-   Sections (shared)
+   Panel headings — a short accent rule leads each one
    ============================================================ */
 
-.section {
-  padding: 64px 0;
-  border-top: 1px solid var(--border);
-}
-
 .section-title {
-  margin: 0 0 28px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0 0 30px;
   font-size: 15px;
   font-weight: 600;
   letter-spacing: 0.12em;
@@ -208,8 +351,18 @@ button:focus-visible {
   color: var(--muted);
 }
 
+.section-title::before {
+  content: "";
+  width: 28px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--accent);
+  box-shadow: 0 0 12px rgba(79, 156, 249, 0.8);
+  flex: none;
+}
+
 /* ============================================================
-   About
+   About — the single sentence is set as a statement, not body copy
    ============================================================ */
 
 .about-grid {
@@ -219,7 +372,30 @@ button:focus-visible {
   align-items: start;
 }
 
-.about-text p { margin: 0 0 14px; color: var(--muted); }
+.about-text {
+  position: relative;
+  padding-left: 28px;
+}
+
+/* Editorial accent bar down the left edge */
+.about-text::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 6px;
+  bottom: 6px;
+  width: 2px;
+  border-radius: 2px;
+  background: linear-gradient(180deg, var(--accent), rgba(79, 156, 249, 0));
+}
+
+.about-text p {
+  margin: 0 0 16px;
+  max-width: 34ch;
+  font-size: clamp(19px, 2.6vw, 26px);
+  line-height: 1.65;
+  color: #cfe0f5;
+}
 .about-text p:last-child { margin-bottom: 0; }
 
 .facts { margin: 0; padding: 0; list-style: none; }
@@ -238,51 +414,89 @@ button:focus-visible {
 .fact-val { color: var(--text); text-align: right; }
 
 /* ============================================================
-   Project cards
+   Projects
+   Rows rather than a card grid: a single project reads as one full
+   row instead of a stretched, mostly-empty tile, and N projects
+   simply stack. Each row is a single <a>, so it is all clickable.
    ============================================================ */
 
-.cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: var(--gap);
+.projects {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.card {
-  display: block;
-  padding: 22px;
-  background: var(--surface);
-  border: 1px solid var(--border);
+.project {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 18px 20px;
+  border: 1px solid rgba(79, 156, 249, 0.16);
   border-radius: var(--radius);
-  color: inherit;
-  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+  background: rgba(15, 30, 46, 0.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.035),
+    0 10px 26px rgba(0, 0, 0, 0.26);
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
-.card:hover {
+.project:hover {
   text-decoration: none;
-  transform: translateY(-3px);
-  border-color: var(--accent);
-  background: var(--surface-2);
+  transform: translateY(-2px);
+  border-color: rgba(79, 156, 249, 0.5);
+  background: rgba(20, 42, 63, 0.72);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 14px 34px rgba(0, 0, 0, 0.32),
+    0 0 30px rgba(79, 156, 249, 0.13);
 }
 
-.card-title {
-  margin: 0 0 8px;
-  font-size: 17px;
+/* Two-letter monogram, echoing the hero badge */
+.project-mark {
+  flex: none;
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--accent);
+  background: rgba(79, 156, 249, 0.12);
+  border: 1px solid rgba(79, 156, 249, 0.28);
+}
+
+.project-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.project-name {
+  color: var(--text);
+  font-size: 16px;
   font-weight: 600;
 }
 
-.card-desc {
-  margin: 0 0 16px;
+.project-desc {
   color: var(--muted);
   font-size: 14px;
-  line-height: 1.7;
+  line-height: 1.6;
 }
 
-.card-tag {
-  display: inline-block;
-  padding: 3px 10px;
-  border-radius: 999px;
-  background: var(--accent-soft);
+.project-arrow {
+  flex: none;
+  color: var(--muted);
+  font-size: 16px;
+  transition: color 0.2s ease, transform 0.2s ease;
+}
+.project:hover .project-arrow {
   color: var(--accent);
-  font-size: 12px;
+  transform: translate(2px, -2px);
 }
 
 /* ============================================================
@@ -297,41 +511,149 @@ button:focus-visible {
   gap: 14px;
 }
 
+/* Frosted-glass tiles */
 .contact-link {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  padding: 16px 18px;
-  border: 1px solid var(--border);
+  padding: 17px 19px;
+  border: 1px solid rgba(79, 156, 249, 0.16);
   border-radius: var(--radius);
-  background: var(--surface);
-  transition: border-color 0.2s ease, background 0.2s ease;
+  background: rgba(15, 30, 46, 0.55);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.035),
+    0 10px 26px rgba(0, 0, 0, 0.26);
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 .contact-link:hover {
   text-decoration: none;
-  border-color: var(--accent);
-  background: var(--surface-2);
+  border-color: rgba(79, 156, 249, 0.5);
+  background: rgba(20, 42, 63, 0.72);
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 14px 34px rgba(0, 0, 0, 0.32),
+    0 0 30px rgba(79, 156, 249, 0.13);
 }
 
 .contact-label { color: var(--muted); font-size: 12px; letter-spacing: 0.06em; }
 .contact-value { color: var(--text); font-size: 15px; }
 
-/* Static info items (Douyin ID / QQ — nothing reliable to link to) */
-.contact-link.is-static { cursor: default; }
-.contact-link.is-static:hover {
-  border-color: var(--border);
-  background: var(--surface);
+/* Douyin / QQ are <button>s: clicking copies, because a phone number has no
+   usable URL. Reset the browser's default button styling first. */
+button.contact-link {
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+/* The "Click to copy" line — it also doubles as the copy feedback */
+.contact-hint {
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  opacity: 0.7;
+  transition: color 0.2s ease, opacity 0.2s ease;
+}
+
+.contact-link.is-copied {
+  border-color: rgba(79, 156, 249, 0.5);
+}
+.contact-link.is-copied .contact-hint {
+  color: var(--accent);
+  opacity: 1;
 }
 
 /* ============================================================
-   Footer
+   Panel indicator dots
    ============================================================ */
 
-.site-footer {
-  padding: 32px 0 48px;
-  border-top: 1px solid var(--border);
+.dots {
+  position: fixed;
+  right: 28px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
-.site-footer p {
+
+.dot {
+  width: 9px;
+  height: 9px;
+  padding: 0;
+  border: 1px solid var(--muted);
+  border-radius: 50%;
+  background: transparent;
+  cursor: pointer;
+  transition: background 0.25s ease, border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+}
+.dot:hover { border-color: var(--accent); }
+.dot.is-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  transform: scale(1.35);
+  box-shadow: 0 0 14px rgba(79, 156, 249, 0.75);
+}
+
+/* ============================================================
+   Panel counter (bottom left)
+   ============================================================ */
+
+.panel-counter {
+  position: fixed;
+  left: 28px;
+  bottom: 26px;
+  z-index: 20;
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  font-variant-numeric: tabular-nums;
+}
+
+#panel-now { color: var(--accent); font-weight: 600; }
+.panel-counter-sep { opacity: 0.45; }
+
+/* ============================================================
+   Scroll hint (first panel only)
+   ============================================================ */
+
+.scroll-hint {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 30px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  pointer-events: none;
+  animation: hint-bob 2.4s ease-in-out infinite;
+}
+
+@keyframes hint-bob {
+  0%, 100% { transform: translateY(0);   opacity: 0.45; }
+  50%      { transform: translateY(7px); opacity: 1; }
+}
+
+/* ============================================================
+   Footer line (sits inside the last panel)
+   ============================================================ */
+
+.slide-footer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 26px;
   margin: 0;
   color: var(--muted);
   font-size: 13px;
@@ -339,31 +661,37 @@ button:focus-visible {
 }
 
 /* ============================================================
-   Scroll reveal (script.js adds .is-visible)
-   Visible by default, so content still renders when JS never
-   loads — no blank page.
-   ============================================================ */
-
-.reveal { opacity: 0; transform: translateY(14px); }
-.reveal.is-visible {
-  opacity: 1;
-  transform: none;
-  transition: opacity 0.6s ease, transform 0.6s ease;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  html { scroll-behavior: auto; }
-  .reveal, .reveal.is-visible { opacity: 1; transform: none; transition: none; }
-  .card:hover, .btn-primary:hover { transform: none; }
-}
-
-/* ============================================================
    Responsive
    ============================================================ */
 
 @media (max-width: 640px) {
-  .hero { padding: 64px 0 52px; }
-  .section { padding: 48px 0; }
+  .slide { padding: 88px 0 72px; }
   .about-grid { grid-template-columns: 1fr; gap: 28px; }
-  .nav { gap: 16px; }
+  .about-text { padding-left: 20px; }
+  .about-text p { max-width: none; }
+  .hero-badge { width: 64px; height: 64px; font-size: 26px; margin-bottom: 22px; }
+  .nav { gap: 14px; }
+  .nav a { font-size: 13px; }
+  .dots { right: 16px; gap: 12px; }
+  .project { padding: 15px 16px; gap: 14px; }
+  .project-mark { width: 40px; height: 40px; font-size: 13px; }
+  /* The counter would collide with the centred footer line */
+  .panel-counter { display: none; }
+}
+
+/* Very short viewports: let a panel exceed the fold rather than trap its
+   content behind a mandatory snap point. */
+@media (max-height: 620px) {
+  html { scroll-snap-type: y proximity; }
+  .slide {
+    min-height: auto;
+    padding: 72px 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .blob { animation: none; }
+  .scroll-hint { animation: none; opacity: 0.6; }
+  .btn-primary:hover, .contact-link:hover, .project:hover { transform: none; }
 }

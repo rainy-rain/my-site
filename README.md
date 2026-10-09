@@ -62,24 +62,40 @@ Open `index.html`. **There are no placeholders left** — every line is real con
 
 Changing just `--accent` shifts the entire mood: teal `#4fd1c5`, purple `#a78bfa`, and so on.
 
-**The projects section is currently removed** (there's no project content yet). The `.cards` / `.card` styles are still in `styles.css`. Once you have projects, paste this into `<main>` in `index.html` (between "About" and "Contact"):
+**The site has four panels**: Home, About, Projects, Contact.
+
+**To add another project**, copy one `.project` row inside the `.projects` list in `index.html` and edit it:
 
 ```html
-  <section id="projects" class="section">
-    <div class="container">
-      <h2 class="section-title">Projects</h2>
-      <div class="cards">
-        <a class="card" href="PROJECT_URL" target="_blank" rel="noopener">
-          <h3 class="card-title">Project name</h3>
-          <p class="card-desc">One sentence on what this project does.</p>
-          <span class="card-tag">Tech stack</span>
+        <a class="project" href="PROJECT_URL" target="_blank" rel="noopener">
+          <span class="project-mark" aria-hidden="true">XX</span>
+          <span class="project-body">
+            <span class="project-name">project-name</span>
+            <span class="project-desc">One sentence on what this project does.</span>
+          </span>
+          <span class="project-arrow" aria-hidden="true">↗</span>
         </a>
-      </div>
-    </div>
-  </section>
 ```
 
-Also add `<a href="#projects">Projects</a>` to the `<nav>`. For more cards, copy the whole `<a class="card">` block — the grid reflows automatically.
+`project-mark` is the two-letter monogram on the left. Rows stack automatically, so add as many as you like.
+
+**To add a whole new panel**, do all three of these — skipping one leaves the deck inconsistent:
+
+1. Add `<section class="slide" id="NAME">…</section>` inside `<main>`, at the position you want. The class must be `slide`: that is what makes it full-height and scroll-snapped.
+2. Add the matching `<a href="#NAME">…</a>` to the header `<nav>`.
+3. Add the matching `<button class="dot" type="button" data-target="#NAME" aria-label="…"></button>` to the `.dots` nav.
+
+That is all. The active-dot highlight, the panel counter, and its `/ NN` total are all derived from the DOM at runtime, so there is nothing to keep in sync by hand.
+
+> **Use `class="slide"`, not `class="section"`.** A panel with the wrong class will not join the deck.
+
+**How the panel deck works** (in case you want to tune it):
+
+- `styles.css` → `html { scroll-snap-type: y mandatory; }` makes one wheel gesture advance exactly one panel; `.slide` sizes each panel to one viewport.
+- `script.js` → the two constants near the top of the render section control the feel:
+  - `FADE_RANGE` (default `1.0`) — how long the crossfade takes relative to the viewport height. At `1.0` the outgoing and incoming opacities sum to exactly 1. Lower it for a snappier swap.
+  - `DRIFT` (default `24`) — pixels of vertical drift applied to a panel that is a full fade away. Set `0` for a pure fade with no movement.
+- Very short windows (`max-height: 620px`) relax to `scroll-snap-type: y proximity` so a tall panel can't trap its own content behind a mandatory snap point.
 
 ---
 
